@@ -20,7 +20,7 @@ ENSO = ["El Niño", "La Niña", "Neutral"]  # El Niño = baseline (no dummy colu
 RISK_COLORS = {"Stable": "#2e8b57", "Risk-prone": "#e6a117",
                "Declining": "#d9534f", "High": "#8e44ad"}
 
-st.set_page_config(page_title="CropForecast-PH", page_icon="🌾", layout="wide")
+st.set_page_config(page_title="cropPHorecast", page_icon="🌾", layout="wide")
 
 
 @st.cache_resource
