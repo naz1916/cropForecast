@@ -53,7 +53,7 @@ def build_row(meta, province, crop, year, qnum, lags, weather, enso):
 
 reg, clf, meta, ref = load_assets()
 
-st.title("🌾 CropForecast-PH")
+st.title("🌾 cropPHorecast")
 st.caption("Quarterly crop production forecast and risk classification for Philippine provinces.")
 
 # ---------------- Sidebar: selection ----------------
