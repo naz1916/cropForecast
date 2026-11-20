@@ -129,8 +129,10 @@ class Data:
         return d[cols].median().to_dict()
 
     def feature_range(self, col: str) -> tuple[float, float]:
-        s = self.df[col] if col in self.df.columns else None
-        return (float(s.quantile(.05)), float(s.quantile(.95))) if s is not None else (np.nan, np.nan)
+        if col not in self.df.columns or not pd.api.types.is_numeric_dtype(self.df[col]):
+            return (np.nan, np.nan)          # text columns (province, crop, quarter, risk_label...) have no numeric range
+        s = self.df[col]
+        return float(s.quantile(.05)), float(s.quantile(.95))
 
 
 def tix_to_yq(tix: int) -> tuple[int, int]:
