@@ -1,0 +1,9 @@
+streamlit>=1.40
+pandas>=2.0,<3
+numpy
+scikit-learn
+pyarrow
+# optional, adds more model choices in the sidebar (heavier install / more memory):
+# lightgbm
+# xgboost
+# catboost
