@@ -1,0 +1,9 @@
+streamlit>=1.40
+pandas
+numpy
+scikit-learn
+gdown
+# optional, adds more model choices in the sidebar (heavier install / more memory):
+# lightgbm
+# xgboost
+# catboost
