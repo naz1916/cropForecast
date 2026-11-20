@@ -13,6 +13,9 @@ st.set_page_config(page_title="CropForecast PH", page_icon="🌾", layout="wide"
 
 CSV_NAME = "crop_trend_master_2025q4.csv"
 
+# fixed model per task (no sidebar choice)
+TASK_MODEL = {"forecast": "Random Forest", "nowcast": "Random Forest", "label": "XGBoost"}
+
 # ------------------------------------------------------------------ feature guide (units + descriptions)
 # name: (label, unit, description, kind)   kind: input / derived
 GUIDE = {
@@ -106,7 +109,8 @@ def fmt(x, nd=1):
     return f"{x:,.{nd}f}"
 
 
-def bundle_with_spinner(task, model_name):
+def bundle_with_spinner(task, model_name=None):
+    model_name = TASK_MODEL[task]   # always the fixed model for this task
     slow = {"forecast": "a few seconds", "nowcast": "10-60 s", "label": "up to ~1-2 min"}[task]
     with st.spinner(f"Training {model_name} for the {task} task on the full dataset ({slow}, first run only) …"):
         return get_bundle(DATA_KEY, task, model_name, DATA)
@@ -138,9 +142,8 @@ try:
 except KeyError as e:
     st.error(str(e)); st.stop()
 
-models = core.available_models()
-model_name = st.sidebar.selectbox("Model", models, help="Trained on the full dataset the first time it is used, then cached. "
-                                  "LightGBM / XGBoost / CatBoost appear only if installed (see requirements.txt).")
+st.sidebar.markdown("**Models**")
+st.sidebar.caption("Forecast: Random Forest · Nowcast: Random Forest · Next-quarter label: XGBoost")
 st.sidebar.caption(f"{len(DATA.df):,} rows · {len(DATA.provinces)} provinces · {len(DATA.crops)} crops · "
                    f"{int(DATA.df.year.min())}-{DATA.last_year}")
 st.sidebar.caption("Production is province-level and in **metric tons per quarter**.")
@@ -275,7 +278,7 @@ with tab_f:
     st.markdown("**Past production** (auto-filled from the dataset, editable)")
     lags = lag_inputs("f", prov, crop, tix, [("production_lag_1", 1), ("production_lag_2", 2), ("production_lag_4", 4)])
     if st.button("Forecast production", type="primary", key="f_btn"):
-        b = bundle_with_spinner("forecast", model_name)
+        b = bundle_with_spinner("forecast")
         row = dict(base_row(prov, crop), qn=quarter, year=year, tix=tix, **lags)
         pred = core.predict_production(b, row)
         c = st.columns(4)
@@ -303,8 +306,8 @@ with tab_n:
     st.markdown("**Weather of the target quarter**")
     wx = weather_inputs("n", prov, quarter)
     if st.button("Nowcast production", type="primary", key="n_btn"):
-        bn = bundle_with_spinner("nowcast", model_name)
-        bf = bundle_with_spinner("forecast", model_name)
+        bn = bundle_with_spinner("nowcast")
+        bf = bundle_with_spinner("forecast")
         row = dict(base_row(prov, crop), qn=quarter, year=year, tix=tix, **lags, **wx)
         pred_n = core.predict_production(bn, row)
         pred_f = core.predict_production(bf, row)
@@ -359,14 +362,14 @@ with tab_c:
 
     go = st.button("Predict next-quarter label", type="primary", key="c_btn")
     if go:
-        b_c = bundle_with_spinner("label", model_name)
+        b_c = bundle_with_spinner("label")
     if b_c is None:   # show disclaimer even before the model is run, using cached results if present
         try:
-            b_c = get_bundle(DATA_KEY, "label", model_name, DATA) if st.session_state.get("c_trained_" + model_name) else None
+            b_c = get_bundle(DATA_KEY, "label", TASK_MODEL["label"], DATA) if st.session_state.get("c_trained_label") else None
         except Exception:
             b_c = None
     if go and b_c is not None:
-        st.session_state["c_trained_" + model_name] = True
+        st.session_state["c_trained_label"] = True
 
     with disc:
         st.error("⚠️ **Low accuracy, use with caution.** This label is a rule-based heuristic (not an official or agronomic standard), "
