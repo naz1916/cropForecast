@@ -1,7 +1,8 @@
 streamlit>=1.40
-pandas
+pandas>=2.0,<3
 numpy
 scikit-learn
+pyarrow
 gdown
 # optional, adds more model choices in the sidebar (heavier install / more memory):
 # lightgbm
